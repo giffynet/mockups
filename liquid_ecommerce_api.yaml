@@ -122,6 +122,9 @@ paths:
             type: string
       requestBody:
         description: Billing information
+        x-code-samples:
+          lang: JavaScript
+          source: console.log('Hello World');
         content:
           application/json:
             schema:

@@ -121,38 +121,6 @@ paths:
           schema:
             type: string
       x-code-samples:
-        - lang: 'Curl'
-          source: |
-            curl --location --request POST 'https://localhost:2000/v2/bill/consumer/scan' \
-            --header 'Liquid-Api-Key: <string>' \
-            --header 'Idempotency-Key: <string>' \
-            --data-raw '{
-            "payee": "<string>",
-            "bill_ref_no": "<string>",
-            "service_code": "<string>",
-            "country_code": "<string>",
-            "amount": "<number>",
-            "payload_code": "<string>",
-            "nonce": "<string>",
-            "sign": "<string>",
-            "items": 
-              [
-                {
-                  "item_number": "<string>",
-                  "item_name": "<string>",
-                  "item_quantity": "<number>",
-                  "item_unit_price": "<number>",
-                  "item_uom": "<string>"
-                },
-                {
-                  "item_number": "<string>",
-                  "item_name": "<string>",
-                  "item_quantity": "<number>",
-                  "item_unit_price": "<number>",
-                  "item_uom": "<string>"
-                }
-              ]
-            }'
         - lang: 'C#'
           source: |
             var client = new RestClient("https://localhost:2000/v2/bill/consumer/scan");

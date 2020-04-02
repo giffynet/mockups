@@ -62,6 +62,38 @@
 
         form.submit();
     }
+        
+    function updateCart() {
+        var item1Total = 0;
+        var item2Total = 0;
+        var itemsSubTotal = 0;
+        var itemsTotal = 0;
+        var item1Price = 40;
+        var item2Price = 60;
+        var item1Qty = parseInt(document.getElementById("txtItem1Qty").value);
+        var item2Qty = parseInt(document.getElementById("txtItem2Qty").value);
+        var spanItem1Total = document.getElementById("lblItem1Total");
+        var spanItem2Total = document.getElementById("lblItem2Total");
+        var spanSubTotal = document.getElementById("lblSubTotal");
+        var spanTotal = document.getElementById("lblTotal");
+        var spanCartTotal = document.getElementById("lblCartTotal");
+        item1Total = item1Price*item1Qty;
+        item2Total = item2Price*item2Qty;
+        itemsTotal = item1Total+item2Total;
+        itemsSubTotal = item1Total+item2Total;
+        spanItem1Total.textContent = "$" + item1Total.toFixed(2);
+        spanItem2Total.textContent = "$" + item2Total.toFixed(2);
+        spanSubTotal.textContent = "$" + itemsSubTotal.toFixed(2);
+        spanTotal.textContent = "$" + itemsTotal.toFixed(2);
+        spanCartTotal.textContent = "$" + itemsTotal.toFixed(2);
+        document.getElementById("hidTotalAmount").value = itemsTotal;        
+        return false;
+    }
+
+    function payOrder() {
+        alert("test");
+        return false;
+    }
 
     //--></script>
 
@@ -107,7 +139,7 @@
         </div>
         <!-- Header
 ================================================== -->
-        <form name="frm" method="post" action="./" id="frm">
+        <form name="frm" method="get" action="./" id="frm" onSubmit="return false">
 <div>
 <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKMTQyNjMzNzY0MQ8WBB4IaXRlbTFxdHkFATEeCGl0ZW0ycXR5BQExFgICAw9kFhQCAQ8PFgIeBFRleHQFByQxMDAuMDBkZAIDDw8WAh8CBQYkNDAuMDBkZAIHDw8WAh8CBQYkNDAuMDBkZAIJDw8WAh8CBQYkNjAuMDBkZAINDw8WAh8CBQYkNjAuMDBkZAIRDw8WAh8CBQckMTAwLjAwZGQCEw8PFgIfAgUFJDAuMDBkZAIVDw8WAh8CBQckMTAwLjAwZGQCFw8PFgIfAgUGMTAwLjAwZGQCGQ8PFgIfAgUERnJlZWRkZNxah+4dmk/JlILZHDNYqMiRHfXeebBs/67zhF5FfAiA" />
 </div>
@@ -263,7 +295,7 @@
                         </tr>
                         <tr>
                             <td colspan="5" align="left">
-                                <input type="submit" name="btnUpdate" value="Update Order" id="btnUpdate" /></td>
+                                <input type="submit" name="btnUpdate" value="Update Order" id="btnUpdate" onClick="return updateCart()" /></td>
                         </tr>
                     </table>
                     <!-- Apply Coupon Code / Buttons -->
@@ -341,7 +373,7 @@
                         <div class="eight columns alpha omega">
                             <ul class="address-review summary">
                                 <li><strong>Choose Payment Type</strong></li>
-                                <input type="radio" name="PaymentType" id="radCDCard" value="radCDCard" onclick="javascript: ShowContent('creditcardform');" />
+                                <input type="radio" name="PaymentType" id="radCDCard" value="radCDCard" onclick="ShowContent('creditcardform'); HideContent('payloadTypeList');" />
                                 Credit / Debit Card
                                 <br>
                                 <li class="credit-card-fields">
@@ -381,11 +413,21 @@
                                     </div>
                                 </li>
                                 
-                                <label><input type="radio" name="PaymentType" id="radLiquid" value="radLiquid" onclick="javascript: HideContent('creditcardform');" checked="checked" />
+                                <label><input type="radio" name="PaymentType" id="radLiquid" value="radLiquid" onclick="HideContent('creditcardform'); ShowContent('payloadTypeList');" checked="checked" />
                                 <img style="display: inline; vertical-align: middle;" src="images/liquid-pay-icon.png" alt="Liquid is your mobile wallet that offers discounts on every e-commerce and m-commerce purchase." />
                                     
                                 </label>
                                 
+                                <div id="payloadTypeList" style="display: block;">
+                                    <span>
+                                    <select id="payLoadType">
+                                        <option value="Grabpay">Grab Pay (SG)</option>
+                                        <option value="Paynow">Paynow (SG)</option>
+                                        <option value="LiquidPay">Liquid Pay (SG)</option>
+                                        <option value="SCBEasy">SCB Easy (TH)</option>
+                                    </select>
+                                    </span>
+                                </div>
 
                                 <input name="hidMerchant" type="hidden" id="hidMerchant" value="trizzy" />
                                 <input name="hidMguid" type="hidden" id="hidMguid" value="FCED2039-C7BC-4193-BCF0-15C70DBE64B8" />
@@ -397,7 +439,7 @@
                                 <br />
 
                                 
-                                <input type="submit" name="btnPayLiquid" value="Order Now" id="btnPayLiquid" />
+                                <input type="submit" name="btnPayLiquid" value="Order Now" id="btnPayLiquid" onClick="return payOrder()" />
                                 
 
                                 <!--

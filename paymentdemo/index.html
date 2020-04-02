@@ -19,10 +19,13 @@
 	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
     <!--http://www.willmaster.com/blog/css/show-hide-div-layer.php-->
+    <script type="text/javascript" src="scripts/qrcode.js"></script>
 
     <script type="text/javascript" language="JavaScript"><!--
         
     var qrImage = [];
+    var intervalHandler;
+    var timeoutHandler;
         
     function HideContent(d) {
         document.getElementById(d).style.display = "none";
@@ -94,10 +97,18 @@
     }
 
     function payOrder() {
+        if (document.getElementById("radLiquid").checked && document.getElementById("payloadTypes").selectedIndex > 0) {
+            ShowContent("qrCodeDisplay");
+            document.getElementById("radCDCard").disabled = true;
+            document.getElementById("radLiquid").disabled = true;
+            document.getElementById("btnPayLiquid").disabled = true;
+        }
         return false;
     }
         
     function getPayloadTypes() {
+
+        // Call Retrieve Dynamic QR Payload Types API here to get the list of all supported QR Payload Types
 
         var jsonData = '{"type":"list","data":[{"payload_code":"GRABPAYQR","name":"GrabPay QR","mode":"C","country_code":"SG","image_url":"https://sb.liquidpay.com/sandbox/common/assets/images/qr_config_images/191120022605.png","embedded_image_url":""},{"payload_code":"SCBQR","name":"Thai QR payment","mode":"C","country_code":"TH","image_url":"https://sb.liquidpay.com/sandbox/common/assets/images/qr_config_images/191120023616.png","embedded_image_url":"https://sb.liquidpay.com/sandbox/common/assets/images/qr_config_images/CTR_191120023617.png"},{"payload_code":"SINGTELDASHQR","name":"Dash QR","mode":"C","country_code":"SG","image_url":"https://sb.liquidpay.com/sandbox/common/assets/images/qr_config_images/191120031340.png","embedded_image_url":""}]}'
 
@@ -116,9 +127,6 @@
             console.log(o.name, o.country_code);
             optionsIndex+=1;
         });
-        
-        
-        return false;
     }
         
     function resetQrImage() {
@@ -127,6 +135,62 @@
 
         function changeQrImage() {
         document.getElementById("imgQrImage").src = qrImage[document.getElementById("payloadTypes").selectedIndex];
+    }
+        
+    function createBill() {
+        
+        // Call Create Bill API here to create bill and generate QR Code based on selected QR Payload Type
+        
+        var jsonData = '{"type": "bill","id": "2020040217264314541342644","bill_ref_no": "Ubm38chMUL8JNiRA0uXq","bill_status": "P","original_currency_code": "SGD","original_amount": 6.66,"final_currency_code": "SGD","final_amount": 6.66,"qr_payload": "00020101021226520008com.grab01369d3e4ba4-f1b9-4f78-827c-a055f0aff40252045411530370254046.665802SG5910ChangiTest6000622907255bcd78d848dcb8f47bcdadfb791480008com.grab07322063f8f937414e58ad728440c5bcde2063041779","created_at": "2020-04-02T17:26:43+08:00","updated_at": "2020-04-02T17:26:43+08:00"}';
+        
+        var objData = JSON.parse(jsonData);
+        $('#qrCode').empty();
+        new QRCode(document.getElementById("qrCode"), {
+            text: objData["qr_payload"],
+            correctLevel : QRCode.CorrectLevel.M
+        });
+    }
+
+    function checkBillStatus() {
+        
+        // call Retrieve Bill API here to check latest bill status
+        
+        var jsonData = '{"type": "bill","id": "2020011423292157700050521","payee": "merchant_eyJtZXJjaGFudF9pZCI6ImNvY29hdHJlZXRlc3QiLCJvdXRsZXRfaWQiOiJjb2NvYXRyZWV0ZXN0IiwibG9jX25vIjoiMSJ9","bill_ref_no": "LQ9lV7I9OtqKcvG5YADA","bill_status": "P","original_currency_code": "SGD","original_amount": 1,"final_currency_code": "SGD","final_amount": 1,"items": null,"created_at": "2020-01-14T23:29:21+08:00","updated_at": "2020-01-14T23:29:24+08:00","print_ref": [],"payload_code": "MERCHANTSCANQR"}';
+        
+        var objData = JSON.parse(jsonData);
+        
+        var randomNumber = Math.floor(Math.random() * 20);
+        if (randomNumber == 7 || randomNumber == 10) {
+            objData["bill_status"] = "A";
+        } else {
+            objData["bill_status"] = "P";
+        }
+        
+        if (objData["bill_status"] != "P" && objData["bill_status"] != "W") {
+            clearInterval(intervalHandler);
+            clearTimeout(timeoutHandler);
+            if (objData["bill_status"] == "A") {
+                document.getElementById("spnBillStatus").textContent = "Payment Approved";
+            } else {
+                if (objData["bill_status"] == "C") {
+                    document.getElementById("spnBillStatus").textContent = "Payment Cancelled";
+                } else {
+                    document.getElementById("spnBillStatus").textContent = "Payment Rejected";
+                }
+            }
+        } else {
+            document.getElementById("spnBillStatus").textContent += ".";
+        }
+    }
+        
+    function retrieveBill() {
+        document.getElementById("spnBillStatus").textContent = "Please wait...";
+        
+        // repeat with the interval of 5 seconds
+        intervalHandler = setInterval(() => checkBillStatus(), 1000);
+
+        // after 15 seconds stop
+        timeoutHandler = setTimeout(() => { clearInterval(intervalHandler); alert('Timeout. Please Retry.'); }, 15000);
     }
 
     //--></script>
@@ -407,7 +471,8 @@
                         <div class="eight columns alpha omega">
                             <ul class="address-review summary">
                                 <li><strong>Choose Payment Type</strong></li>
-                                <input type="radio" name="PaymentType" id="radCDCard" value="radCDCard" onclick="ShowContent('creditcardform'); HideContent('payloadTypesList'); HideContent('divGetPayloadTypes');" />
+                                <input type="radio" name="PaymentType" id="radCDCard" value="radCDCard" 
+                                       onclick="ShowContent('creditcardform'); HideContent('payloadTypesList'); HideContent('qrRelatedStuff');" />
                                 Credit / Debit Card
                                 <br>
                                 <li class="credit-card-fields">
@@ -447,23 +512,47 @@
                                     </div>
                                 </li>
                                 
-                                <label><p><input type="radio" name="PaymentType" id="radLiquid" value="radLiquid" onclick="HideContent('creditcardform'); ShowContent('divGetPayloadTypes');" checked="checked" />
+                                <label><p><input type="radio" name="PaymentType" id="radLiquid" value="radLiquid" onclick="HideContent('creditcardform'); ShowContent('qrRelatedStuff');" checked="checked" />
                                 <img style="display: inline; vertical-align: middle;" src="images/liquid-pay-icon.png" alt="Liquid is your mobile wallet that offers discounts on every e-commerce and m-commerce purchase." />
                                 </p></label>
+                                
+                                <div id='qrRelatedStuff' style="display: block;">
 
                                 <div id="divGetPayloadTypes" style="display: block;">
-                                    <p>
-                                <input type="button" name="GetPayloadTypes" value="STEP 1: Get QR Payload Types from Liquid eCommerce API" id="btnGetPayloadTypes" onClick="return getPayloadTypes();" style="background-color: #FF9922;" />
-                                    </p>
+                                <p>
+                                <input type="button" name="GetPayloadTypes" value="STEP 1: Get QR Payload Types from LiquidPay" id="btnGetPayloadTypes" onClick="getPayloadTypes();" style="background-color: #FF9922;" />
+                                </p>
                                 </div>
 
                                 <div id="payloadTypesList" style="display: none;">
-                                    <span>
-                                    <select id="payloadTypes" onchange="return changeQrImage();" style="float:left;">
+                                    <p>
+                                    <select id="payloadTypes" onchange="return changeQrImage();">
                                         <option value="">Please select QR Code options</option>
                                     </select>
-                                    <img src="" id="imgQrImage" style="float:right;">
-                                    </span>
+                                    <img src="" id="imgQrImage">
+                                    </p>
+                                </div>
+                                
+                                <div id="qrCodeDisplay" style="display: none;">
+                                <p>
+                                <input type="button" name="CreateBill" value="STEP 2: Call Create Bill API and Generate QR Payload" id="btnCreateBill" 
+                                       onClick="createBill(); ShowContent('billStatusDisplay');" style="background-color: #FF9922;" />
+                                </p>
+                                </div>
+
+                                <p><div id="qrCode"></div></p>
+                            
+                                <div id="billStatusDisplay" style="display: none;">
+                                <p>
+                                <input type="button" name="RetrieveBill" value="STEP 3: Call Retrieve Bill API for bill status (at interval)" id="btnRetrieveBill" 
+                                       onClick="retrieveBill(); ShowContent('billStatus');" style="background-color: #FF9922;" />
+                                </p>
+                                </div>
+                                
+                                <div id="billStatus" style="display: none;">
+                                    <span id="spnBillStatus"></span>
+                                </div>
+                                    
                                 </div>
 
                                 <input name="hidMerchant" type="hidden" id="hidMerchant" value="trizzy" />

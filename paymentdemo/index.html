@@ -21,6 +21,9 @@
     <!--http://www.willmaster.com/blog/css/show-hide-div-layer.php-->
 
     <script type="text/javascript" language="JavaScript"><!--
+        
+    var qrImage = [];
+        
     function HideContent(d) {
         document.getElementById(d).style.display = "none";
     }
@@ -91,8 +94,39 @@
     }
 
     function payOrder() {
-        alert("test");
         return false;
+    }
+        
+    function getPayloadTypes() {
+
+        var jsonData = '{"type":"list","data":[{"payload_code":"GRABPAYQR","name":"GrabPay QR","mode":"C","country_code":"SG","image_url":"https://sb.liquidpay.com/sandbox/common/assets/images/qr_config_images/191120022605.png","embedded_image_url":""},{"payload_code":"SCBQR","name":"Thai QR payment","mode":"C","country_code":"TH","image_url":"https://sb.liquidpay.com/sandbox/common/assets/images/qr_config_images/191120023616.png","embedded_image_url":"https://sb.liquidpay.com/sandbox/common/assets/images/qr_config_images/CTR_191120023617.png"},{"payload_code":"SINGTELDASHQR","name":"Dash QR","mode":"C","country_code":"SG","image_url":"https://sb.liquidpay.com/sandbox/common/assets/images/qr_config_images/191120031340.png","embedded_image_url":""}]}'
+
+        var objData = JSON.parse(jsonData);
+        
+        ShowContent('payloadTypesList');
+        document.getElementById("payloadTypes").options.length=0;
+        document.getElementById("payloadTypes").options[0]=new Option("Please select one of these QR Code options", "");
+        var optionsIndex = 1;
+        resetQrImage();
+        qrImage = [];
+        qrImage.push([""]);
+        objData.data.forEach(function(o) {
+            document.getElementById("payloadTypes").options[optionsIndex]=new Option(o.name+" ["+o.country_code+"]", o.payload_code);
+            qrImage.push([o.image_url]);
+            console.log(o.name, o.country_code);
+            optionsIndex+=1;
+        });
+        
+        
+        return false;
+    }
+        
+    function resetQrImage() {
+        document.getElementById("imgQrImage").src = "";
+    }
+
+        function changeQrImage() {
+        document.getElementById("imgQrImage").src = qrImage[document.getElementById("payloadTypes").selectedIndex];
     }
 
     //--></script>
@@ -373,7 +407,7 @@
                         <div class="eight columns alpha omega">
                             <ul class="address-review summary">
                                 <li><strong>Choose Payment Type</strong></li>
-                                <input type="radio" name="PaymentType" id="radCDCard" value="radCDCard" onclick="ShowContent('creditcardform'); HideContent('payloadTypeList');" />
+                                <input type="radio" name="PaymentType" id="radCDCard" value="radCDCard" onclick="ShowContent('creditcardform'); HideContent('payloadTypesList'); HideContent('divGetPayloadTypes');" />
                                 Credit / Debit Card
                                 <br>
                                 <li class="credit-card-fields">
@@ -413,19 +447,22 @@
                                     </div>
                                 </li>
                                 
-                                <label><input type="radio" name="PaymentType" id="radLiquid" value="radLiquid" onclick="HideContent('creditcardform'); ShowContent('payloadTypeList');" checked="checked" />
+                                <label><p><input type="radio" name="PaymentType" id="radLiquid" value="radLiquid" onclick="HideContent('creditcardform'); ShowContent('divGetPayloadTypes');" checked="checked" />
                                 <img style="display: inline; vertical-align: middle;" src="images/liquid-pay-icon.png" alt="Liquid is your mobile wallet that offers discounts on every e-commerce and m-commerce purchase." />
-                                    
-                                </label>
-                                
-                                <div id="payloadTypeList" style="display: block;">
+                                </p></label>
+
+                                <div id="divGetPayloadTypes" style="display: block;">
+                                    <p>
+                                <input type="button" name="GetPayloadTypes" value="STEP 1: Get QR Payload Types from Liquid eCommerce API" id="btnGetPayloadTypes" onClick="return getPayloadTypes();" style="background-color: #FF9922;" />
+                                    </p>
+                                </div>
+
+                                <div id="payloadTypesList" style="display: none;">
                                     <span>
-                                    <select id="payLoadType">
-                                        <option value="Grabpay">Grab Pay (SG)</option>
-                                        <option value="Paynow">Paynow (SG)</option>
-                                        <option value="LiquidPay">Liquid Pay (SG)</option>
-                                        <option value="SCBEasy">SCB Easy (TH)</option>
+                                    <select id="payloadTypes" onchange="return changeQrImage();" style="float:left;">
+                                        <option value="">Please select QR Code options</option>
                                     </select>
+                                    <img src="" id="imgQrImage" style="float:right;">
                                     </span>
                                 </div>
 
